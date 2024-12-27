@@ -1,93 +1,83 @@
 <?php
 require_once '../models/Produk.php';
+require_once '../config/database.php';
 
 class ProdukController {
-    private $produkModel;
+    private $model;
 
     public function __construct() {
-        $this->produkModel = new Produk();
+        global $conn;
+        $this->model = new Produk($conn);
     }
 
     public function index() {
-        $produk = $this->produkModel->getAllProduk();
-        require_once '../views/produk/index.php';
+        $produk = $this->model->getAll();
+        require '../views/produk/index.php';
     }
 
     public function create() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $nama = $_POST['nama'];
-            $deskripsi = $_POST['deskripsi'];
-            $harga = $_POST['harga'];
-            $stok = $_POST['stok'];
-            $foto = $this->uploadFoto();
-        
-            if ($foto) {
-                $this->produkModel->createProduk($nama, $deskripsi, $harga, $stok, $foto);
-                header('Location: index.php');
-            } else {
-                echo "Gagal meng-upload foto.";
-            }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->model->create($_FILES + $_POST);
+            header('Location: ../public/router.php');
+        } else {
+            require '../views/produk/create.php';
         }
-
-        require_once '../views/produk/create.php';
     }
 
     public function edit($id) {
-        $produk = $this->produkModel->getProdukById($id);
-
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $nama = $_POST['nama'];
-            $deskripsi = $_POST['deskripsi'];
-            $harga = $_POST['harga'];
-            $stok = $_POST['stok'];
-
-            $foto = isset($_FILES['foto']) && $_FILES['foto']['error'] == 0 ? $this->uploadFoto() : $produk['foto'];
-
-            if ($this->produkModel->updateProduk($id, $nama, $deskripsi, $harga, $stok, $foto)) {
-                header('Location: index.php');
-            }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $_POST['id'] = $id;
+            $this->model->edit($_FILES + $_POST);
+            header('Location: ../public/router.php');
+        } else {
+            $produk = $this->model->getById($id);
+            require '../views/produk/edit.php';
         }
-
-        require_once '../views/produk/edit.php';
     }
 
+    public function store() {
+        // Sanitasi dan validasi input
+        $nama = filter_var($_POST['nama'], FILTER_SANITIZE_STRING);
+        $harga = filter_var($_POST['harga'], FILTER_VALIDATE_FLOAT);
+        $stok = filter_var($_POST['stok'], FILTER_VALIDATE_INT);
+
+        if ($harga <= 0 || $stok < 0) {
+            die("Harga dan stok harus valid.");
+        }
+
+        $foto = $_FILES['foto'];
+        if ($foto['size'] > 2 * 1024 * 1024) {
+            die("Ukuran file terlalu besar (maksimum 2MB).");
+        }
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (!in_array($foto['type'], $allowedTypes)) {
+            die("Format file tidak valid.");
+        }
+        $targetDir = "../uploads/";
+        $filename = uniqid() . "-" . basename($foto['name']);
+        $targetFile = $targetDir . $filename;
+        move_uploaded_file($foto['tmp_name'], $targetFile);
+
+        try {
+            $db = new PDO("mysql:host=localhost;dbname=hydrodb", "root", "");
+            $stmt = $db->prepare("INSERT INTO produk (nama, harga, stok, foto) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$nama, $harga, $stok, $filename]);
+            echo "Produk berhasil ditambahkan.";
+        } catch (PDOException $e) {
+            die("Kesalahan: " . $e->getMessage());
+        }
+    }
+    
+
     public function delete($id) {
-        $this->produkModel->deleteProduk($id);
-        header('Location: index.php');
+        $this->model->delete($id);
+        header('Location: ../public/router.php');
     }
 
     public function search() {
-        if (isset($_POST['search'])) {
-            $keyword = $_POST['search'];
-            $produk = $this->produkModel->searchProduk($keyword);
-            require_once '../views/produk/index.php';
-        }
-    }
-
-    private function uploadFoto() {
-        $targetDir = "../uploads/";
-        $imageFileType = strtolower(pathinfo($_FILES["foto"]["name"], PATHINFO_EXTENSION));
-        $hashedFileName = hash('sha256', uniqid() . $_FILES["foto"]["name"]) . '.' . $imageFileType;
-        $targetFile = $targetDir . $hashedFileName;
-
-        if (getimagesize($_FILES["foto"]["tmp_name"])) {
-            if ($_FILES["foto"]["size"] <= 2000000) {
-                if (in_array($imageFileType, ["jpg", "jpeg", "png", "gif"])) {
-                    if (move_uploaded_file($_FILES["foto"]["tmp_name"], $targetFile)) {
-                        return $hashedFileName;
-                    } else {
-                        echo "Gagal meng-upload file.";
-                    }
-                } else {
-                    echo "Hanya file JPG, JPEG, PNG, atau GIF yang diperbolehkan.";
-                }
-            } else {
-                echo "Ukuran file terlalu besar.";
-            }
-        } else {
-            echo "File bukan gambar.";
-        }
-
-        return false;
+        $keyword = $_GET['keyword'] ?? '';
+        $produk = $this->model->search($keyword);
+        require '../views/produk/index.php';
     }
 }
+?>

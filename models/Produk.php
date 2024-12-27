@@ -1,45 +1,98 @@
 <?php
-require_once '../config/database.php';
-
 class Produk {
-    private $pdo;
+    private $conn;
+    private $table = 'produk';
 
-    public function __construct() {
-        global $pdo;
-        $this->pdo = $pdo;
+    public function __construct($db) {
+        $this->conn = $db;
     }
 
-    public function getAllProduk() {
-        $stmt = $this->pdo->prepare("SELECT * FROM produk");
+    public static function getAll() {
+        try {
+            $db = new PDO("mysql:host=localhost;dbname=hydrodb", "root", "");
+            $stmt = $db->query("SELECT * FROM produk");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            die("Kesalahan: " . $e->getMessage());
+        }
+    }
+
+    public function create($data) {
+        $query = "INSERT INTO $this->table (nama, deskripsi, harga, stok, foto) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die("Prepare Error: " . $this->conn->error);
+        }
+        $stmt->bind_param(
+            "ssdis", 
+            $data['nama'], 
+            $data['deskripsi'], 
+            $data['harga'], 
+            $data['stok'], 
+            $data['foto']
+        );
+        if (!$stmt->execute()) {
+            die("Execute Error: " . $stmt->error);
+        }
+        return true;
+    }
+
+    public function getById($id) {
+        $query = "SELECT * FROM $this->table WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die("Prepare Error: " . $this->conn->error);
+        }
+        $stmt->bind_param("i", $id);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 
-    public function getProdukById($id) {
-        $stmt = $this->pdo->prepare("SELECT * FROM produk WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    public function edit($data) {
+        $query = "UPDATE $this->table SET nama = ?, deskripsi = ?, harga = ?, stok = ?, foto = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die("Prepare Error: " . $this->conn->error);
+        }
+        $stmt->bind_param(
+            "ssdisi", 
+            $data['nama'], 
+            $data['deskripsi'], 
+            $data['harga'], 
+            $data['stok'], 
+            $data['foto'], 
+            $data['id']
+        );
+        if (!$stmt->execute()) {
+            die("Execute Error: " . $stmt->error);
+        }
+        return true;
     }
 
-    public function createProduk($nama, $deskripsi, $harga, $stok, $foto) {
-        $stmt = $this->pdo->prepare("INSERT INTO produk (nama, deskripsi, harga, stok, foto) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$nama, $deskripsi, $harga, $stok, $foto]);
+    public function delete($id) {
+        $query = "DELETE FROM $this->table WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die("Prepare Error: " . $this->conn->error);
+        }
+        $stmt->bind_param("i", $id);
+        if (!$stmt->execute()) {
+            die("Execute Error: " . $stmt->error);
+        }
+        return true;
     }
 
-    public function updateProduk($id, $nama, $deskripsi, $harga, $stok, $foto) {
-        $stmt = $this->pdo->prepare("UPDATE produk SET nama = ?, deskripsi = ?, harga = ?, stok = ?, foto = ? WHERE id = ?");
-        $stmt->execute([$nama, $deskripsi, $harga, $stok, $foto, $id]);
-    }
-
-    public function deleteProduk($id) {
-        $stmt = $this->pdo->prepare("DELETE FROM produk WHERE id = ?");
-        $stmt->execute([$id]);
-    }
-
-    public function searchProduk($keyword) {
-        $stmt = $this->pdo->prepare("SELECT * FROM produk WHERE nama LIKE ?");
-        $stmt->execute(['%' . $keyword . '%']);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function search($keyword) {
+        $query = "SELECT * FROM $this->table WHERE nama LIKE ? OR deskripsi LIKE ? ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        if (!$stmt) {
+            die("Prepare Error: " . $this->conn->error);
+        }
+        $searchTerm = "%" . $keyword . "%";
+        $stmt->bind_param("ss", $searchTerm, $searchTerm);
+        $stmt->execute();
+        return $stmt->get_result();
     }
 }
 ?>
