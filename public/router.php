@@ -1,29 +1,56 @@
-<!-- KODE INI SEMENTARA DIBISUKAN -->
-
 <title>Hydro</title>
-
 <?php include '../views/navbar.php'; ?>
 
 <?php
-
+require_once '../config/database.php';
 require_once '../controllers/ProdukController.php';
-// require_once '../controllers/AuthController.php';
+require_once '../controllers/AuthController.php';
 
-$action = isset($_GET['action']) ? $_GET['action'] : 'index';
-$controller = new ProdukController();
+// session_start();
+
+$action = isset($_GET['action']) ? $_GET['action'] : 'landing';
+
+// Inisialisasi controller dengan database
+$controller = new ProdukController($db);
+$controller2 = new AuthController($db);
 
 switch ($action) {
-    case 'home':
-        require_once '../views/home.php';
+    case 'landing':
+        require_once '../views/landing.php';
         break;
+
+    case 'login':
+        require_once '../views/auth/login.php';
+        break;
+
+    case 'register':
+        require_once '../views/auth/register.php';
+        break;
+    
+    case 'logout':
+        $controller2->logout();
+        break;
+
     case 'produk_create':
+        // Pastikan hanya penjual yang bisa mengakses halaman ini
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'penjual') {
+            header('Location: login.php');
+            exit;
+        }
         require_once '../views/produk/create.php';
         break;
+
     case 'produk_store':
-        require_once '../controllers/ProdukController.php';
-        $produkController->store();
+        // Memanggil fungsi store untuk menambah produk baru
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $controller->store();
+        } else {
+            header('Location: ../public/router.php');
+        }
         break;
+
     case 'edit':
+        // Edit produk berdasarkan ID
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if ($id) {
             $controller->edit($id);
@@ -31,54 +58,35 @@ switch ($action) {
             header('Location: ../public/router.php');
         }
         break;
-    case 'delete':
+
+    case 'update':
+        // Update produk berdasarkan ID
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if ($id) {
-            $controller->delete($id);
+            $controller->update($id);
         } else {
             header('Location: ../public/router.php');
         }
         break;
+
+    case 'delete':
+        // Menghapus produk berdasarkan ID
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+        if ($id) {
+            $controller->destroy($id);
+        } else {
+            header('Location: ../public/router.php');
+        }
+        break;
+
     case 'search':
+        // Mencari produk berdasarkan keyword
         $controller->search();
         break;
+
     default:
+        // Menampilkan daftar produk
         $controller->index();
         break;
 }
-
 ?>
-
-<?php
-// if (isset($_GET['action'])) {
-//     $action = $_GET['action'];
-
-//     if ($action === 'store') {
-//         require '../controllers/ProdukController.php';
-//         $controller = new ProdukController();
-//         $controller->store();
-//     } else {
-//         http_response_code(404);
-//         echo "Rute tidak ditemukan.";
-//     }
-// } else {
-//     echo "Selamat datang di halaman utama.";
-// }
-?>
-
-
-<!-- // $authController = new AuthController();
-
-// if (isset($_GET['action']) && $_GET['action'] === 'login') {
-//     if ($_SESSION['role'] == 'penjual') {
-//         header('Location: produk/index.php');
-//         exit;
-//     } elseif ($_SESSION['role'] == 'pembeli') {
-//         header('Location: landing.php');
-//         exit;
-//     }
-// } else {
-//     include __DIR__ . '/../views/auth/login.php';
-// }
-
-?> -->

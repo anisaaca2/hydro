@@ -1,30 +1,61 @@
-<!-- KODE INI SEMENTARA DIBISUKAN -->
+<?php
+// require_once '../../controllers/AuthController.php';
+require_once '../config/database.php';
 
-<!-- <!DOCTYPE html>
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['username'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $role = $_POST['role'];
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+    $stmt = $db->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+    if ($stmt->execute([$name, $email, $hashedPassword, $role])) {
+        $_SESSION['message'] = "Registrasi berhasil! Silakan login.";
+        header("Location: ../public/router.php");
+        exit;
+    } else {
+        echo "Error: " . $stmt->errorInfo()[2];
+    }
+}
+?>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register - Hydro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <form action="../../public/index.php?action=register" method="POST">
-        <label for="name">Nama:</label>
-        <input type="text" name="name" id="name" required>
-
-        <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required>
-
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password" required>
-
-        <label for="role">Role:</label>
-        <select name="role" id="role" required>
-            <option value="penjual">Penjual</option>
-            <option value="pembeli">Pembeli</option>
-        </select>
-
-        <button type="submit">Register</button>
-    </form>
+<body class="bg-gray-100">
+    <div class="max-w-md mx-auto bg-white p-6 mt-10 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-center">Register</h2>
+        <form method="POST" action="" class="mt-4">
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-semibold text-gray-700">Username</label>
+                <input type="text" name="username" id="username" class="w-full p-2 border border-gray-300 rounded mt-1" required>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
+                <input type="email" name="email" id="email" class="w-full p-2 border border-gray-300 rounded mt-1" required>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>
+                <input type="password" name="password" id="password" class="w-full p-2 border border-gray-300 rounded mt-1" required>
+            </div>
+            <div class="mb-4">
+                <label for="role" class="block text-sm font-semibold text-gray-700">Role</label>
+                <select name="role" id="role" class="w-full p-2 border border-gray-300 rounded mt-1" required>
+                    <option value="penjual">Penjual</option>
+                    <option value="pembeli">Pembeli</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded mt-4 hover:bg-blue-500">Register</button>
+        </form>
+        <div class="mt-4 text-center">
+            <p>Already have an account? <a href="router.php?action=login" class="text-blue-600">Login here</a></p>
+        </div>
+    </div>
 </body>
-</html> -->
+</html>

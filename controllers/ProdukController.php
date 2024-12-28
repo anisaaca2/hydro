@@ -1,83 +1,128 @@
 <?php
+
 require_once '../models/Produk.php';
 require_once '../config/database.php';
 
 class ProdukController {
-    private $model;
+    private $produkModel;
 
-    public function __construct() {
-        global $conn;
-        $this->model = new Produk($conn);
+    public function __construct($db) {
+        $this->produkModel = new Produk($db);
     }
 
     public function index() {
-        $produk = $this->model->getAll();
-        require '../views/produk/index.php';
+        $produk = $this->produkModel->getAll();
+        require_once "../views/produk/index.php";
     }
 
-    public function create() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->model->create($_FILES + $_POST);
-            header('Location: ../public/router.php');
+    public function store() {
+        $nama = $_POST['nama'];
+        $deskripsi = $_POST['deskripsi'];
+        $harga = (int)$_POST['harga'];
+        $stok = (int)$_POST['stok'];
+        $foto = $_FILES['foto'];
+
+        // Validasi data
+        if ($harga < 0 || $stok < 0) {
+            die("Harga atau stok tidak valid.");
+        }
+
+        // Proses upload foto
+        if ($foto['error'] === 0) {
+            $ext = pathinfo($foto['name'], PATHINFO_EXTENSION);
+            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                die("Format file foto tidak valid.");
+            }
+
+            $fileName = uniqid() . "." . $ext;
+            $uploadPath = "../uploads/" . $fileName;
+
+            if (!move_uploaded_file($foto['tmp_name'], $uploadPath)) {
+                die("Gagal mengupload foto.");
+            }
         } else {
-            require '../views/produk/create.php';
+            die("Foto wajib diunggah.");
+        }
+
+        // Simpan data ke database
+        $data = [
+            'nama' => $nama,
+            'deskripsi' => $deskripsi,
+            'harga' => $harga,
+            'stok' => $stok,
+            'foto' => $fileName
+        ];
+
+        if ($this->produkModel->create($data)) {
+            header("Location: ../public/router.php");
+        } else {
+            die("Gagal menyimpan data.");
         }
     }
 
     public function edit($id) {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $_POST['id'] = $id;
-            $this->model->edit($_FILES + $_POST);
-            header('Location: ../public/router.php');
-        } else {
-            $produk = $this->model->getById($id);
-            require '../views/produk/edit.php';
-        }
+        $produk = $this->produkModel->findById($id);
+        require_once "../views/produk/edit.php";
     }
 
-    public function store() {
-        // Sanitasi dan validasi input
-        $nama = filter_var($_POST['nama'], FILTER_SANITIZE_STRING);
-        $harga = filter_var($_POST['harga'], FILTER_VALIDATE_FLOAT);
-        $stok = filter_var($_POST['stok'], FILTER_VALIDATE_INT);
-
-        if ($harga <= 0 || $stok < 0) {
-            die("Harga dan stok harus valid.");
-        }
-
+    public function update($id) {
+        $nama = $_POST['nama'];
+        $deskripsi = $_POST['deskripsi'];
+        $harga = (int)$_POST['harga'];
+        $stok = (int)$_POST['stok'];
         $foto = $_FILES['foto'];
-        if ($foto['size'] > 2 * 1024 * 1024) {
-            die("Ukuran file terlalu besar (maksimum 2MB).");
-        }
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (!in_array($foto['type'], $allowedTypes)) {
-            die("Format file tidak valid.");
-        }
-        $targetDir = "../uploads/";
-        $filename = uniqid() . "-" . basename($foto['name']);
-        $targetFile = $targetDir . $filename;
-        move_uploaded_file($foto['tmp_name'], $targetFile);
 
-        try {
-            $db = new PDO("mysql:host=localhost;dbname=hydrodb", "root", "");
-            $stmt = $db->prepare("INSERT INTO produk (nama, harga, stok, foto) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nama, $harga, $stok, $filename]);
-            echo "Produk berhasil ditambahkan.";
-        } catch (PDOException $e) {
-            die("Kesalahan: " . $e->getMessage());
+        $produk = $this->produkModel->findById($id);
+        $fileName = $produk['foto']; // Gunakan nama file lama jika tidak ada file baru diunggah
+
+        // Proses upload foto baru (opsional)
+        if ($foto['error'] === 0) {
+            $ext = pathinfo($foto['name'], PATHINFO_EXTENSION);
+            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                die("Format file foto tidak valid.");
+            }
+
+            $fileName = uniqid() . "." . $ext;
+            $uploadPath = "../uploads/" . $fileName;
+
+            if (!move_uploaded_file($foto['tmp_name'], $uploadPath)) {
+                die("Gagal mengupload foto.");
+            }
+        }
+
+        // Update data di database
+        $data = [
+            'nama' => $nama,
+            'deskripsi' => $deskripsi,
+            'harga' => $harga,
+            'stok' => $stok,
+            'foto' => $fileName
+        ];
+
+        if ($this->produkModel->update($id, $data)) {
+            header("Location: ../public/router.php");
+        } else {
+            die("Gagal memperbarui data.");
         }
     }
-    
 
-    public function delete($id) {
-        $this->model->delete($id);
-        header('Location: ../public/router.php');
+    public function destroy($id) {
+        if ($this->produkModel->delete($id)) {
+            header("Location: ../public/router.php");
+        } else {
+            die("Gagal menghapus data.");
+        }
     }
 
     public function search() {
-        $keyword = $_GET['keyword'] ?? '';
-        $produk = $this->model->search($keyword);
-        require '../views/produk/index.php';
+        if (isset($_GET['keyword'])) {
+            $keyword = $_GET['keyword'];
+            $produk = $this->produkModel->search($keyword);
+            require_once "../views/produk/index.php";
+        } else {
+            header("Location: ../public/router.php");
+        }
     }
+    
 }
 ?>

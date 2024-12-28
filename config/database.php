@@ -2,13 +2,21 @@
 // Database connection
 $dbname = 'hydrodb';
 $host = 'localhost';
-$user = 'root';
+$username = 'root';
 $password = '';
 
-$conn = new mysqli($host, $user, $password, $dbname);
+// $conn = new mysqli($host, $user, $password, $dbname);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
+// if ($conn->connect_error) {
+//     die("Koneksi gagal: " . $conn->connect_error);
+// }
+
+try {
+    $db = new mysqli($host, $username, $password, $dbname);
+    if ($db->connect_error) {
+        die("Connection failed: " . $db->connect_error);
+    }
+} catch (Exception $e) {
+    die("Database connection error: " . $e->getMessage());
 }
 ?>
