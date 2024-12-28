@@ -7,15 +7,26 @@ class Produk {
         $this->conn = $db;
     }
 
-    public static function getAll() {
-        try {
-            $db = new PDO("mysql:host=localhost;dbname=hydrodb", "root", "");
-            $stmt = $db->query("SELECT * FROM produk");
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            die("Kesalahan: " . $e->getMessage());
-        }
+   // public static function getAll() {
+     //   try {
+       //     $db = new PDO("mysql:host=localhost;dbname=hydrodb", "root", "");
+         //   $stmt = $db->query("SELECT * FROM produk");
+           // return $stmt->fetchAll(PDO::FETCH_ASSOC);
+       // } catch (PDOException $e) {
+          //  die("Kesalahan: " . $e->getMessage());
+      //  }
+  //  }
+
+  public function getAll() {
+    try {
+        $query = "SELECT * FROM $this->table";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); // Mengembalikan array asosiatif
+    } catch (PDOException $e) {
+        die("Kesalahan: " . $e->getMessage());
     }
+}
 
     public function create($data) {
         $query = "INSERT INTO $this->table (nama, deskripsi, harga, stok, foto) VALUES (?, ?, ?, ?, ?)";

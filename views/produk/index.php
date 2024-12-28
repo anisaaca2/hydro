@@ -35,23 +35,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = $produk->fetch_assoc()): ?>
+                <?php if (!empty($produk)): ?>
+                    <?php foreach ($produk as $row): ?> <!-- Menggunakan foreach untuk iterasi array -->
                         <tr class="text-center border-b border-gray-200">
-                            <td class="px-4 py-2"><?= $row['id'] ?></td>
-                            <td class="px-4 py-2"><?= $row['nama'] ?></td>
-                            <td class="px-4 py-2"><?= $row['deskripsi'] ?></td>
-                            <td class="px-4 py-2">Rp<?= number_format($row['harga'], 0, ',', '.') ?></td>
-                            <td class="px-4 py-2"><?= $row['stok'] ?></td>
-                            <td class="px-4 py-2">
-                                <img src="../uploads/<?= $row['foto'] ?>" alt="Gambar Produk" class="h-20 w-20 object-cover mx-auto rounded-lg">
-                            </td>
-                            <td class="px-4 py-2">
-                                <a href="edit.php?id=<?= $row['id'] ?>" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Edit</a>
-                                <a href="delete.php?id=<?= $row['id'] ?>" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Hapus</a>
-                            </td>
+                        <td class="px-4 py-2"><?= $row['id'] ?></td>
+                        <td class="px-4 py-2"><?= htmlspecialchars($row['nama']) ?></td>
+                        <td class="px-4 py-2"><?= htmlspecialchars($row['deskripsi']) ?></td>
+                        <td class="px-4 py-2">Rp<?= number_format($row['harga'], 0, ',', '.') ?></td>
+                        <td class="px-4 py-2"><?= $row['stok'] ?></td>
+                        <td class="px-4 py-2">
+                            <img src="../uploads/<?= htmlspecialchars($row['foto']) ?>" alt="Gambar Produk" class="h-20 w-20 object-cover mx-auto rounded-lg">
+                         </td>
+                         <td class="px-4 py-2">
+                            <a href="?action=edit&id=<?= $row['id'] ?>" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Edit</a>
+                            <a href="?action=delete&id=<?= $row['id'] ?>" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Hapus</a>
+                        </td>
+                    </tr>
+                     <?php endforeach; ?>
+                     <?php else: ?>
+                        <tr>
+                            <td colspan="7" class="px-4 py-2 text-center text-gray-500">Tidak ada produk ditemukan.</td>
                         </tr>
-                    <?php endwhile; ?>
-                </tbody>
+                    <?php endif; ?>
+                    </tbody>
             </table>
         </div>
     </div>
