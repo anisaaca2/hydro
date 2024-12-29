@@ -1,3 +1,16 @@
+<?php
+
+require_once '../../config/database.php';
+require_once '../../models/Produk.php';
+
+if (!isset($db)) {
+    die("Koneksi database tidak ditemukan.");
+}
+
+$produkModel = new Produk($db);
+$produkList = $produkModel->getAll();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,33 +21,41 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-8">
-        <h2 class="text-2xl font-bold mb-6">Daftar Produk</h2>
+        <h2 class="text-3xl font-bold text-blue-600 mb-6 text-center">Daftar Produk</h2>
 
-        <?php if ($produk->num_rows > 0): ?>
-            <table class="min-w-full table-auto border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="border border-gray-300 px-4 py-2">Nama Produk</th>
-                        <th class="border border-gray-300 px-4 py-2">Harga</th>
-                        <th class="border border-gray-300 px-4 py-2">Stok</th>
-                        <th class="border border-gray-300 px-4 py-2">Foto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = $produk->fetch_assoc()): ?>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-2"><?= htmlspecialchars($row['nama']); ?></td>
-                            <td class="border border-gray-300 px-4 py-2">Rp<?= number_format($row['harga'], 0, ',', '.'); ?></td>
-                            <td class="border border-gray-300 px-4 py-2"><?= $row['stok']; ?></td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <img src="../uploads/<?= htmlspecialchars($row['foto']); ?>" alt="Foto Produk" class="w-24 h-24 object-cover">
-                            </td>
+        <?php if (!empty($produkList)): ?>
+            <div class="overflow-x-auto shadow-lg rounded-lg">
+                <table class="min-w-full border-collapse bg-white rounded-lg">
+                    <thead>
+                        <tr class="bg-blue-500 text-white">
+                            <th class="border px-6 py-3 text-left font-semibold">Nama Produk</th>
+                            <th class="border px-6 py-3 text-left font-semibold">Harga</th>
+                            <th class="border px-6 py-3 text-left font-semibold">Stok</th>
+                            <th class="border px-6 py-3 text-left font-semibold">Foto</th>
+                            <th class="border px-6 py-3 text-left font-semibold">Aksi</th>
                         </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($produkList as $produk): ?>
+                            <tr class="hover:bg-gray-100 transition duration-300">
+                                <td class="border px-6 py-4"><?= htmlspecialchars($produk['nama']); ?></td>
+                                <td class="border px-6 py-4 text-blue-600 font-bold">Rp<?= number_format($produk['harga'], 0, ',', '.'); ?></td>
+                                <td class="border px-6 py-4"><?= $produk['stok']; ?></td>
+                                <td class="border px-6 py-4">
+                                    <img src="../../uploads/<?= htmlspecialchars($produk['foto']); ?>" 
+                                         alt="Foto Produk" 
+                                         class="w-24 h-24 object-cover rounded-lg border border-gray-300">
+                                </td>
+                                <td>
+                                    <button><a href="../produk/edit.php">Edit</a></button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php else: ?>
-            <p class="text-gray-500">Belum ada produk yang tersedia.</p>
+            <p class="text-gray-500 text-center mt-10">Belum ada produk yang tersedia.</p>
         <?php endif; ?>
     </div>
 </body>

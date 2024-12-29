@@ -19,18 +19,15 @@ $profileLink = $userRole === 'penjual' ? '../views/profile/penjual.php' : '../vi
 <body class="bg-gray-100">
     <nav class="bg-blue-600 shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <!-- Logo -->
             <div class="text-white text-2xl font-bold">
                 <a href="index.php">Hydro</a>
             </div>
 
-            <!-- Navigation Links -->
             <div class="hidden md:flex space-x-6 items-center">
                 <?php if (!$isLoggedIn): ?>
                     <a href="router.php?action=login" class="text-white hover:text-blue-300">Login</a>
                     <a href="router.php?action=register" class="text-white hover:text-blue-300">Register</a>
                 <?php else: ?>
-                    <!-- User Dropdown -->
                     <div class="relative">
                         <button id="userDropdown" class="flex items-center space-x-2 text-white hover:text-blue-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -38,7 +35,7 @@ $profileLink = $userRole === 'penjual' ? '../views/profile/penjual.php' : '../vi
                             </svg>
                             <span><?php echo htmlspecialchars($userName); ?></span>
                         </button>
-                        <!-- Dropdown Menu -->
+
                         <div id="dropdownMenu" class="hidden absolute right-0 bg-white shadow-md rounded mt-2 py-2 w-48">
                             <a href="<?php echo $profileLink; ?>" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Profil</a>
                             <a href="router.php?action=logout" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Logout</a>

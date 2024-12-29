@@ -25,24 +25,20 @@ class AuthController {
             return "Format email tidak valid.";
         }
     
-        // Cek apakah username sudah digunakan
         $checkUsername = $this->db->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
         $checkUsername->execute([$username]);
         if ($checkUsername->fetchColumn() > 0) {
             return "Username sudah digunakan. Silakan pilih username lain.";
         }
     
-        // Cek apakah email sudah digunakan
         $checkEmail = $this->db->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
         $checkEmail->execute([$email]);
         if ($checkEmail->fetchColumn() > 0) {
             return "Email sudah digunakan. Silakan gunakan email lain.";
         }
     
-        // Hash password
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
     
-        // Simpan data ke tabel users
         $stmt = $this->db->prepare("INSERT INTO users (username, email, password, alamat, nohp, role) 
                                     VALUES (?, ?, ?, ?, ?, ?)");
         $result = $stmt->execute([$username, $email, $passwordHash, $alamat, $nohp, $role]);
@@ -54,49 +50,43 @@ class AuthController {
         }
     }
     
-    
     public function login($data)
-{
-    $email = $data['email'];
-    $password = $data['password'];
+    {
+        $email = $data['email'];
+        $password = $data['password'];
 
-    // Query untuk mendapatkan user berdasarkan email
-    $query = "SELECT * FROM users WHERE email = ?";
-    $stmt = $this->db->prepare($query);
+        $query = "SELECT * FROM users WHERE email = ?";
+        $stmt = $this->db->prepare($query);
 
-    if ($stmt) {
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        if ($stmt) {
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        // Cek apakah user ditemukan
-        if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
+            if ($result->num_rows > 0) {
+                $user = $result->fetch_assoc();
 
-            // Validasi password
-            if (isset($user['password']) && password_verify($password, $user['password'])) {
-                // Set session
-                $_SESSION['id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
+                if (isset($user['password']) && password_verify($password, $user['password'])) {
+                    $_SESSION['id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['role'] = $user['role'];
 
-                // Redirect sesuai role
-                if ($user['role'] === 'penjual') {
-                    header('Location: ../public/router.php');
-                } elseif ($user['role'] === 'pembeli') {
-                    header('Location: ../public/router.php');
+                    if ($user['role'] === 'penjual') {
+                        header('Location: ../public/router.php');
+                    } elseif ($user['role'] === 'pembeli') {
+                        header('Location: ../public/router.php');
+                    }
+                    return true;
+                } else {
+                    return "Email atau password salah.";
                 }
-                return true; // Login berhasil
             } else {
-                return "Email atau password salah."; // Password salah
+                return "User tidak ditemukan.";
             }
         } else {
-            return "Email atau password salah."; // User tidak ditemukan
+            return "Terjadi kesalahan pada server: " . $this->db->error;
         }
-    } else {
-        return "Terjadi kesalahan pada server: " . $this->db->error;
     }
-}
     
     public function logout() {
         session_start();
