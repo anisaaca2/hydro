@@ -28,6 +28,7 @@ $produkList = $produkModel->getAll();
                 <table class="min-w-full border-collapse bg-white rounded-lg">
                     <thead>
                         <tr class="bg-blue-500 text-white">
+                            <th class="border px-6 py-3 text-left font-semibold">No.</th>
                             <th class="border px-6 py-3 text-left font-semibold">Nama Produk</th>
                             <th class="border px-6 py-3 text-left font-semibold">Harga</th>
                             <th class="border px-6 py-3 text-left font-semibold">Stok</th>
@@ -38,6 +39,7 @@ $produkList = $produkModel->getAll();
                     <tbody>
                         <?php foreach ($produkList as $produk): ?>
                             <tr class="hover:bg-gray-100 transition duration-300">
+                                <td class="border px-6 py-4"><?= htmlspecialchars($produk['id']); ?></td>
                                 <td class="border px-6 py-4"><?= htmlspecialchars($produk['nama']); ?></td>
                                 <td class="border px-6 py-4 text-blue-600 font-bold">Rp<?= number_format($produk['harga'], 0, ',', '.'); ?></td>
                                 <td class="border px-6 py-4"><?= $produk['stok']; ?></td>
@@ -46,7 +48,7 @@ $produkList = $produkModel->getAll();
                                          alt="Foto Produk" 
                                          class="w-24 h-24 object-cover rounded-lg border border-gray-300">
                                 </td>
-                                <td>
+                                <td class="border px-6 py-4">
                                     <button><a href="../produk/edit.php">Edit</a></button>
                                 </td>
                             </tr>

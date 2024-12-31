@@ -52,14 +52,14 @@ class ProdukController {
         ];
 
         if ($this->produkModel->create($data)) {
-            header("Location: ../public/router.php");
+            header("Location: ../views/produk/index.php");
         } else {
             die("Gagal menyimpan data.");
         }
     }
 
     public function edit($id) {
-        $produk = $this->produkModel->findById($id);
+        $produk = $this->produkModel->GetById($id);
         if (!$produk) {
             die("Produk tidak ditemukan.");
         }

@@ -70,6 +70,7 @@ class AuthController {
                     $_SESSION['id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = $user['role'];
+                    $_SESSION['email'] = $user['email'];
 
                     if ($user['role'] === 'penjual') {
                         header('Location: ../public/router.php');
@@ -87,6 +88,47 @@ class AuthController {
             return "Terjadi kesalahan pada server: " . $this->db->error;
         }
     }
+
+    public function editUser($id) {
+        require_once '../models/User.php';
+        $userModel = new User($this->db);
+        $user = $userModel->getUserById($id);
+        
+        if (!$user) {
+            die("User tidak ditemukan.");
+        }
+        
+        return $user; // Mengembalikan data user untuk digunakan di view
+    }
+    
+    public function updateUser($data) {
+        require_once '../models/User.php';
+        $userModel = new User($this->db);
+    
+        $id = isset($data['id']) ? $data['id'] : null;
+        $username = isset($data['username']) ? trim($data['username']) : null;
+        $email = isset($data['email']) ? trim($data['email']) : null;
+        $alamat = isset($data['alamat']) ? trim($data['alamat']) : null;
+        $nohp = isset($data['nohp']) ? trim($data['nohp']) : null;
+        $password = isset($data['password']) ? trim($data['password']) : null;
+    
+        if (!$username || !$email || !$alamat || !$nohp) {
+            return "Semua data wajib diisi (username, email, alamat, dan nomor telepon).";
+        }
+    
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return "Format email tidak valid.";
+        }
+    
+        $result = $userModel->updateUserById($id, $username, $email, $alamat, $nohp, $password);
+    
+        if ($result) {
+            header('Location: ../views/profile/pembeli.php');
+            exit;
+        } else {
+            return "Terjadi kesalahan saat mengupdate data. Silakan coba lagi.";
+        }
+    }    
     
     public function logout() {
         session_start();

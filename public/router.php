@@ -1,12 +1,15 @@
-<title>Hydro</title>
-<?php include '../views/navbar.php'; ?>
+
 
 <?php
+session_start();
+
 require_once '../config/database.php';
+require_once '../models/Produk.php';
 require_once '../controllers/ProdukController.php';
 require_once '../controllers/AuthController.php';
 
-// session_start();
+require '../views/navbar.php';
+
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'landing';
 
@@ -25,7 +28,25 @@ switch ($action) {
     case 'register':
         require_once '../views/auth/register.php';
         break;
-    
+
+    case 'profile_edit':
+        $id = $_SESSION['id'] ?? null;
+        if ($id) {
+            $user = $controller2->editUser($id);
+            require_once '../views/profile/edit.php';
+        } else {
+            header('Location: login.php');
+        }
+        break;
+
+    case 'profile_update':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $controller2->updateUser($_POST);
+        } else {
+            header('Location: ../public/router.php');
+        }
+        break;
+        
     case 'logout':
         $controller2->logout();
         break;
@@ -94,3 +115,5 @@ switch ($action) {
         break;
 }
 ?>
+
+<title>Hydro</title>

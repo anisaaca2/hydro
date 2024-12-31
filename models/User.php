@@ -12,8 +12,33 @@ class User {
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_assoc(); // Mengembalikan data user
+        return $result->fetch_assoc();
     }
+
+    public function getUserById($id)
+    {
+        $query = "SELECT * FROM users WHERE id = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+    
+
+    public function updateUserById($id, $username, $email, $alamat, $nohp, $password = null) {
+        if ($password) {
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            $query = "UPDATE users SET username = ?, email = ?, alamat = ?, nohp = ?, password = ? WHERE id = ?";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param('sssssi', $username, $email, $alamat, $nohp, $hashedPassword, $id);
+        } else {
+            $query = "UPDATE users SET username = ?, email = ?, alamat = ?, nohp = ? WHERE id = ?";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param('ssssi', $username, $email, $alamat, $nohp, $id);
+        }
+        return $stmt->execute();
+    }    
 
     public function registerUser($name, $email, $password, $role) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT); // Enkripsi password

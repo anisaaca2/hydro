@@ -5,12 +5,14 @@ require_once '../config/database.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['username'];
     $email = $_POST['email'];
+    $nohp = $_POST['nohp'];
+    $alamat = $_POST['alamat'];
     $password = $_POST['password'];
     $role = $_POST['role'];
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    $stmt = $db->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
-    if ($stmt->execute([$name, $email, $hashedPassword, $role])) {
+    $stmt = $db->prepare("INSERT INTO users (username, email, nohp, alamat, password, role) VALUES (?, ?, ?, ?, ?, ?)");
+    if ($stmt->execute([$name, $email, $nohp, $alamat, $hashedPassword, $role])) {
         $_SESSION['message'] = "Registrasi berhasil! Silakan login.";
         header("Location: ../public/router.php");
         exit;
@@ -39,6 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mb-4">
                 <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
                 <input type="email" name="email" id="email" class="w-full p-2 border border-gray-300 rounded mt-1" required>
+            </div>
+            <div class="mb-4">
+                <label for="nohp" class="block text-sm font-semibold text-gray-700">Nomor Telepon</label>
+                <input type="nohp" name="nohp" id="nohp" class="w-full p-2 border border-gray-300 rounded mt-1" required>
+            </div>
+            <div class="mb-4">
+                <label for="alamat" class="block text-sm font-semibold text-gray-700">Alamat</label>
+                <input type="alamat" name="alamat" id="alamat" class="w-full p-2 border border-gray-300 rounded mt-1" required>
             </div>
             <div class="mb-4">
                 <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>

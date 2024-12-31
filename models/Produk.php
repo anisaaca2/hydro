@@ -20,26 +20,21 @@ class Produk {
     }
 
     public function getAll() {
-        $query = "SELECT * FROM $this->table ORDER BY created_at DESC";
+        $query = "SELECT * FROM $this->table ORDER BY created_at ASC";
         $stmt = $this->db->query($query);
         if ($stmt) {
             return $stmt->fetch_all(MYSQLI_ASSOC); // Gunakan fetch_all() milik mysqli
-        }
+        } 
         return [];
     }
-
-    // Di dalam model Produk
-    public function getById($id) {
-        $query = "SELECT * FROM produk WHERE id = ?";
-        $stmt = $this->db->prepare($query);
-        $stmt->bind_param('i', $id);
+    
+    public function getById($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM produk WHERE id = ?");
+        $stmt->bind_param("i", $id);
         $stmt->execute();
-        $result = $stmt->get_result();
-        
-        // Jika data ditemukan, kembalikan sebagai array
-        return $result->fetch_assoc();
+        return $stmt->get_result()->fetch_assoc();
     }
-
 
     public function findById($id) {
         $query = "SELECT * FROM $this->table WHERE id = ?";
@@ -48,9 +43,9 @@ class Produk {
     
         if ($stmt->execute()) {
             $result = $stmt->get_result();
-            return $result->fetch_assoc();  // Mengambil satu baris data
+            return $result->fetch_assoc();
         }
-        return null; // Jika produk tidak ditemukan
+        return null;
     }
     
 
@@ -60,6 +55,14 @@ class Produk {
         $stmt->bind_param('ssdiss', $data['nama'], $data['deskripsi'], $data['harga'], $data['stok'], $data['foto'], $data['id']);
         return $stmt->execute();
     }
+
+    // public function update($id, $nama, $deskripsi, $harga, $stok, $foto = null) {
+        
+    //         $query = "UPDATE produk SET nama = ?, deskripsi = ?, harga = ?, stok = ?, foto = ? WHERE id = ?";
+    //         $stmt = $this->db->prepare($query);
+    //         $stmt->bind_param('ssssi', $nama, $deskripsi, $harga, $stok, $foto, $id);
+    //     return $stmt->execute();
+    // } 
 
     public function delete($id) {
         $query = "DELETE FROM $this->table WHERE id = ?";
