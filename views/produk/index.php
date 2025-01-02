@@ -47,6 +47,7 @@ $totalPages = ceil($totalProduk / $limit);
             <button class="bg-green-500 px-4 py-2 mb-5 rounded-lg hover:bg-green-600">
                 <a href="../produk/create.php" class="text-white">Tambahkan Produk</a>
             </button>
+            
             <?php if (!empty($produkList)): ?>
                 <div class="overflow-x-auto shadow-lg rounded-lg">
                     <table class="min-w-full border-collapse bg-white rounded-lg">

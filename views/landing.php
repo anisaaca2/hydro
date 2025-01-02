@@ -43,7 +43,7 @@ $produkList = $produkModel->getAll();
                                 ?>
                             </p>
                             
-                            <a href="../views/produk/show.php">
+                            <a href="../public/router.php?action=show_produk&id=<?= $produk['id'] ?>">
                                 <button class="bg-blue-600 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700">
                                     Detail
                                 </button>

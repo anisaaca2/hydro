@@ -116,13 +116,12 @@ switch ($action) {
             }
             break;
         
-        case 'show':
-            $id = isset($_GET['id']) ? intval($_GET['id']) : null; // Validasi ID
+        case 'show_produk':
+            $id = isset($_GET['id']) ? intval($_GET['id']) : null;
             if ($id) {
-                $controller->show($id); // Tampilkan produk
+                $controller->show_produk($id);
             } else {
-                header('Location: ../public/router.php');
-                exit;
+                die("ID produk tidak valid.");
             }
             break;
 

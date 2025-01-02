@@ -121,9 +121,15 @@ class AuthController {
         }
     
         $result = $userModel->updateUserById($id, $username, $email, $alamat, $nohp, $password);
+
+        $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
     
         if ($result) {
-            header('Location: ../views/profile/pembeli.php');
+            if ($role === 'penjual') {
+                header('Location: ../views/profile/penjual.php');
+            } elseif ($role === 'pembeli') {
+                header('Location: ../views/profile/pembeli.php');
+            }
             exit;
         } else {
             return "Terjadi kesalahan saat mengupdate data. Silakan coba lagi.";

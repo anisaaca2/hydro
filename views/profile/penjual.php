@@ -33,7 +33,6 @@ if (!$user) {
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
-
     <div class="container flex justify-end mx-auto mt-10 space-x-4">
         <button class="bg-green-500 px-4 py-2 text-white rounded-lg hover:bg-green-600 flex items-center space-x-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">

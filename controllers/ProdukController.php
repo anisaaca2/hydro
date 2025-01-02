@@ -145,20 +145,18 @@ class ProdukController {
         }
     }
 
-    public function show($id) {
-        // Ambil produk berdasarkan ID
+    public function show_produk($id) {
         $produk = $this->produkModel->getById($id);
     
         if (!$produk) {
             die("Produk tidak ditemukan.");
         }
     
-        // Ambil kategori produk
         $kategori = $this->produkModel->getKategori($produk['kategori_id']);
     
-        // Kirim data produk dan kategori ke view
         require_once "../views/produk/show.php";
     }
+    
     
 }
 

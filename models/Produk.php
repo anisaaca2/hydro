@@ -28,7 +28,7 @@ class Produk {
 
     public function getById($id) {
         if (!is_numeric($id)) {
-            return null;
+            return null; // Hindari query jika ID tidak valid
         }
     
         $query = "SELECT * FROM $this->table WHERE id = ?";
@@ -42,12 +42,9 @@ class Produk {
         $stmt->execute();
         $result = $stmt->get_result();
     
-        if (!$result || $result->num_rows === 0) {
-            return null;
-        }
-    
-        return $result->fetch_assoc();
+        return $result->fetch_assoc() ?: null; // Mengembalikan null jika tidak ditemukan
     }
+    
 
     public function update($data) {
         $query = "UPDATE $this->table SET nama = ?, deskripsi = ?, harga = ?, stok = ?, foto = ?, kategori_id = ? WHERE id = ?";
