@@ -6,21 +6,32 @@ require_once '../config/database.php';
 class ProdukController {
     private $produkModel;
 
-
     public function __construct($db) {
         $this->produkModel = new Produk($db);
     }
 
     public function index() {
-        $produk = $this->produkModel->getAll();
+        // Menentukan jumlah produk per halaman
+        $limit = 5;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Halaman saat ini, default 1
+        $offset = ($page - 1) * $limit; // Menghitung offset berdasarkan halaman
+
+        // Mendapatkan produk dengan pagination
+        $produkList = $this->produkModel->getPagination($limit, $offset);
+
+        // Mendapatkan total produk untuk menghitung jumlah halaman
+        $totalProduk = $this->produkModel->getCount();
+        $totalPages = ceil($totalProduk / $limit); // Menghitung total halaman
+
         require_once "../views/produk/index.php";
     }
-
+    
     public function store() {
         $nama = $_POST['nama'];
         $deskripsi = $_POST['deskripsi'];
         $harga = (int)$_POST['harga'];
         $stok = (int)$_POST['stok'];
+        $kategori_id = intval($_POST['kategori_id']);
         $foto = $_FILES['foto'];
 
         if ($harga < 0 || $stok < 0) {
@@ -28,7 +39,7 @@ class ProdukController {
         }
 
         if ($foto['error'] === 0) {
-            $ext = pathinfo($foto['name'], PATHINFO_EXTENSION);
+            $ext = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
             if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
                 die("Format file foto tidak valid.");
             }
@@ -48,48 +59,63 @@ class ProdukController {
             'deskripsi' => $deskripsi,
             'harga' => $harga,
             'stok' => $stok,
+            'kategori_id' => $kategori_id,
             'foto' => $fileName
         ];
 
         if ($this->produkModel->create($data)) {
             header("Location: ../views/produk/index.php");
+            exit;
         } else {
             die("Gagal menyimpan data.");
         }
     }
 
     public function edit($id) {
-        $produk = $this->produkModel->GetById($id);
+        $produk = $this->produkModel->getById($id);
         if (!$produk) {
             die("Produk tidak ditemukan.");
         }
         return $produk;
     }
-    
+
     public function update($id) {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nama = $_POST['nama'];
             $deskripsi = $_POST['deskripsi'];
-            $harga = $_POST['harga'];
-            $stok = $_POST['stok'];
+            $harga = (int)$_POST['harga'];
+            $stok = (int)$_POST['stok'];
+            $kategori_id = intval($_POST['kategori_id']);
             $foto = $_FILES['foto'];
-        
-            if ($foto['error'] == 0) {
-                $targetDir = "../uploads/";
-                $targetFile = $targetDir . basename($foto['name']);
-                move_uploaded_file($foto['tmp_name'], $targetFile);
-            } else {
-                $targetFile = $_POST['foto_lama'];
+
+            $targetFile = $_POST['foto_lama'];
+
+            if ($foto['error'] === 0) {
+                $ext = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
+                if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                    die("Format file foto tidak valid.");
+                }
+
+                $newFileName = uniqid() . "." . $ext;
+                $uploadPath = "../uploads/" . $newFileName;
+
+                if (move_uploaded_file($foto['tmp_name'], $uploadPath)) {
+                    $targetFile = $newFileName;
+                } else {
+                    die("Gagal mengupload foto.");
+                }
             }
-        
+
             $data = [
                 'id' => $id,
                 'nama' => $nama,
                 'deskripsi' => $deskripsi,
                 'harga' => $harga,
                 'stok' => $stok,
+                'kategori_id' => $kategori_id,
                 'foto' => $targetFile
             ];
+
             if ($this->produkModel->update($data)) {
                 header("Location: ../public/router.php?action=show&id=" . $id);
                 exit;
@@ -101,34 +127,39 @@ class ProdukController {
 
     public function destroy($id) {
         if ($this->produkModel->delete($id)) {
-            header("Location: ../public/router.php");
+            header("Location: ../views/produk/index.php");
+            exit;
         } else {
             die("Gagal menghapus data.");
         }
     }
 
     public function search() {
-        if (isset($_GET['keyword'])) {
-            $keyword = $_GET['keyword'];
+        if (isset($_GET['keyword']) && !empty(trim($_GET['keyword']))) {
+            $keyword = htmlspecialchars(trim($_GET['keyword']));
             $produk = $this->produkModel->search($keyword);
-            require_once "../views/produk/index.php";
+            require_once "../views/produk/search.php";
         } else {
             header("Location: ../public/router.php");
+            exit;
         }
     }
 
     public function show($id) {
-        // Ambil data produk berdasarkan ID
+        // Ambil produk berdasarkan ID
         $produk = $this->produkModel->getById($id);
     
         if (!$produk) {
             die("Produk tidak ditemukan.");
         }
     
-        // Pass data produk ke view
-        require_once '../../views/produk/show.php';
+        // Ambil kategori produk
+        $kategori = $this->produkModel->getKategori($produk['kategori_id']);
+    
+        // Kirim data produk dan kategori ke view
+        require_once "../views/produk/show.php";
     }
     
-    
 }
+
 ?>

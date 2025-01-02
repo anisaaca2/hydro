@@ -5,6 +5,13 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'penjual') {
     echo "Anda tidak memiliki izin untuk menambah produk.";
     exit;
 }
+
+require_once '../../config/database.php';
+require_once '../../models/Kategori.php';
+
+$kategoriModel = new Kategori($db);
+
+$kategori = $kategoriModel->getAll();
 ?>
 
 <!DOCTYPE html>
@@ -17,8 +24,17 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'penjual') {
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-8">
-        <h2 class="text-2xl font-bold mb-6">Tambah Produk</h2>
-        <form action="/hydro/public/router.php?action=produk_store" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded shadow-md">
+        <div class="flex justify-between">
+            <h2 class="text-2xl font-bold mb-6">Tambah Produk</h2>
+            <div class="flex items-center mb-6">
+                <p class="text-sm text-green-500"><a href="../produk/index.php">
+                Seller Center
+                </a></p>
+                <span class="mx-2">/</span>
+                <p>Tambah Produk</p>
+            </div>
+        </div>
+        <form action="../../public/router.php?action=produk_store" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded shadow-md">
             <div class="mb-4">
                 <label for="nama" class="block font-medium text-gray-700">Nama Produk</label>
                 <input type="text" name="nama" id="nama" required class="w-full px-4 py-2 border rounded-md">
@@ -35,11 +51,28 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'penjual') {
                 <label for="stok" class="block font-medium text-gray-700">Stok</label>
                 <input type="number" name="stok" id="stok" required min="0" class="w-full px-4 py-2 border rounded-md">
             </div>
+            <label for="kategori_id" class="block font-medium text-gray-700">Kategori</label>
+            <div id="kategori_id" class="grid grid-cols-1 md:grid-cols-5 gap-2 px-4 py-2 mb-4 border border-gray-300 rounded-md">
+                <?php foreach ($kategori as $item): ?>
+                <div class="flex items-center">
+                    <input type="radio" name="kategori_id" id="kategori_<?= $item['id'] ?>" value="<?= $item['id'] ?>" 
+                        class="w-4 h-4 border-gray-300 rounded" required>
+                    <label for="kategori_<?= $item['id'] ?>" class="ml-2 text-sm text-gray-700">
+                        <?= htmlspecialchars($item['nama']) ?>
+                    </label>
+                </div>
+                <?php endforeach; ?>
+            </div>
             <div class="mb-4">
                 <label for="foto" class="block font-medium text-gray-700">Foto Produk</label>
                 <input type="file" name="foto" id="foto" required accept="image/png, image/jpeg" class="w-full px-4 py-2 border rounded-md">
             </div>
-            <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Simpan Produk</button>
+
+            <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Simpan Produk</button>
+            <button type="button" class="px-4 py-2 bg-slate-500 text-white rounded-md hover:bg-slate-600">
+                <a href="../produk/index.php" class="text-white">Kembali</a>
+            </button>
+
             <?php if (isset($message)): ?>
                 <p class="mt-4 text-red-500"><?php echo $message; ?></p>
             <?php endif; ?>

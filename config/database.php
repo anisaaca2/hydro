@@ -1,5 +1,4 @@
 <?php
-// Database connection
 $dbname = 'hydrodb';
 $host = 'localhost';
 $username = 'root';

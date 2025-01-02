@@ -1,19 +1,17 @@
 <?php
-session_start();
-
 require_once '../../config/database.php';
 require_once '../../models/Produk.php';
 
 $id = $_GET['id'] ?? null;
-if (!$id) {
-    die("ID produk tidak ditemukan.");
+if (!$id || !is_numeric($id)) {
+    die("ID produk tidak valid atau tidak ditemukan.");
 }
 
 $produkModel = new Produk($db);
 $produk = $produkModel->getById($id);
 
 if (!$produk) {
-    die("Data produk tidak ditemukan.");
+    die("Produk dengan ID $id tidak ditemukan.");
 }
 ?>
 
@@ -31,26 +29,26 @@ if (!$produk) {
         <form action="../../public/router.php?action=update&id=<?= htmlspecialchars($produk['id']); ?>" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded shadow-md">
             <div class="mb-4">
                 <label for="nama" class="block font-medium text-gray-700">Nama Produk</label>
-                <input type="text" name="nama" value="<?= htmlspecialchars($produk['nama']); ?>" id="nama" required class="w-full px-4 py-2 border rounded-md">
+                <input type="text" name="nama" value="<?= htmlspecialchars($produk['nama'] ?? '', ENT_QUOTES); ?>" id="nama" required class="w-full px-4 py-2 border rounded-md">
             </div>
             <div class="mb-4">
                 <label for="deskripsi" class="block font-medium text-gray-700">Deskripsi</label>
-                <textarea name="deskripsi" id="deskripsi" required class="w-full px-4 py-2 border rounded-md"><?= htmlspecialchars($produk['deskripsi']); ?></textarea>
+                <textarea name="deskripsi" id="deskripsi" required class="w-full px-4 py-2 border rounded-md"><?= htmlspecialchars($produk['deskripsi'] ?? '', ENT_QUOTES); ?></textarea>
             </div>
             <div class="mb-4">
                 <label for="harga" class="block font-medium text-gray-700">Harga</label>
-                <input type="number" name="harga" value="<?= htmlspecialchars($produk['harga']); ?>" id="harga" required min="0" step="0.01" class="w-full px-4 py-2 border rounded-md">
+                <input type="number" name="harga" value="<?= htmlspecialchars($produk['harga'] ?? '', ENT_QUOTES); ?>" id="harga" required min="0" step="0.01" class="w-full px-4 py-2 border rounded-md">
             </div>
             <div class="mb-4">
                 <label for="stok" class="block font-medium text-gray-700">Stok</label>
-                <input type="number" name="stok" value="<?= htmlspecialchars($produk['stok']); ?>" id="stok" required min="0" class="w-full px-4 py-2 border rounded-md">
+                <input type="number" name="stok" value="<?= htmlspecialchars($produk['stok'] ?? '', ENT_QUOTES); ?>" id="stok" required min="0" class="w-full px-4 py-2 border rounded-md">
             </div>
             <div class="mb-4">
                 <label for="foto" class="block font-medium text-gray-700">Foto</label>
-                <input type="hidden" name="foto_lama" value="<?= htmlspecialchars($produk['foto']); ?>">
+                <input type="hidden" name="foto_lama" value="<?= htmlspecialchars($produk['foto'] ?? '', ENT_QUOTES); ?>">
                 <?php if (!empty($produk['foto'])): ?>
                     <div class="mt-2">
-                        <img src="../../uploads/<?= htmlspecialchars($produk['foto']); ?>" alt="Foto Produk" class="w-32 h-32 object-cover">
+                        <img src="../../uploads/<?= htmlspecialchars($produk['foto'], ENT_QUOTES); ?>" alt="Foto Produk" class="w-32 h-32 object-cover">
                     </div>
                 <?php endif; ?>
                 <input type="file" name="foto" accept="image/*" class="w-full px-4 py-2 border rounded-md mt-2">
