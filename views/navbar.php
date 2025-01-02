@@ -20,6 +20,17 @@ $profileLink = $userRole === 'penjual' ? '../views/profile/penjual.php' : '../vi
                 <a href="index.php">Hydro</a>
             </div>
 
+            <div class="flex-grow flex justify-center">
+                <!-- Form Pencarian -->
+                <form action="router.php?action=search" method="GET" class="flex items-center w-full max-w-md">
+                    <input type="text" name="keyword" placeholder="Cari produk..." class="px-4 py-2 rounded-l-md border border-gray-300 w-full" required>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-400">Cari</button>
+                </form>
+            </div>
+
+
+
+
             <div class="hidden md:flex space-x-6 items-center">
                 <?php if ($isLoggedIn): ?>
                     <div class="relative">
@@ -40,7 +51,7 @@ $profileLink = $userRole === 'penjual' ? '../views/profile/penjual.php' : '../vi
                         <a href="router.php?action=register" class="text-white hover:text-blue-300">Register</a>
                 <?php endif; ?>
             </div>
-        </div>
+        </div> 
     </nav>
 
     <script>
